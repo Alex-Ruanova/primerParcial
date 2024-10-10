@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block title %}Lista de Tareas{% endblock %}
+
+{% block content %}
+<h1>Lista de Tareas</h1>
+<a href="{{ url_for('create') }}">Crear Nueva Tarea</a>
+<br><br>
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <ul class="messages">
+    {% for message in messages %}
+      <li><strong>{{ message }}</strong></li>
+    {% endfor %}
+    </ul>
+  {% endif %}
+{% endwith %}
+
+<ul>
+    {% for tarea in tareas %}
+        <li>
+            <h2>{{ tarea['titulo'] }}</h2>
+            <p>{{ tarea['descripcion'] }}</p>
+            <a href="{{ url_for('edit', id=tarea['id']) }}">Editar</a>
+            <form action="{{ url_for('delete', id=tarea['id']) }}" method="post" style="display:inline;">
+                <button type="submit">Eliminar</button>
+            </form>
+        </li>
+    {% else %}
+        <li>No hay tareas. ¡Agrega una nueva!</li>
+    {% endfor %}
+</ul>
+{% endblock %}

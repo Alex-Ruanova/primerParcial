@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block title %}Editar Tarea{% endblock %}
+
+{% block content %}
+<h1>Editar Tarea</h1>
+<a href="{{ url_for('index') }}">Volver a la Lista de Tareas</a>
+<br><br>
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <ul class="messages">
+    {% for message in messages %}
+      <li><strong>{{ message }}</strong></li>
+    {% endfor %}
+    </ul>
+  {% endif %}
+{% endwith %}
+
+<form method="post">
+    <label for="titulo">Título</label><br>
+    <input type="text" id="titulo" name="titulo" value="{{ tarea['titulo'] }}"><br><br>
+    <label for="descripcion">Descripción</label><br>
+    <textarea id="descripcion" name="descripcion">{{ tarea['descripcion'] }}</textarea><br><br>
+    <button type="submit">Actualizar Tarea</button>
+</form>
+{% endblock %}
