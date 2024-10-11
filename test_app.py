@@ -50,3 +50,49 @@ def test_delete_task(client):
 
     response = client.post(f'/{tarea["id"]}/delete', follow_redirects=True)
     assert f'La tarea con id {tarea["id"]} ha sido eliminada.' in response.data.decode('utf-8')
+
+# Nuevos casos de prueba
+
+def test_create_task_with_long_title(client):
+    long_title = 'T' * 300  # Título de 300 caracteres
+    response = client.post('/create', data={'titulo': long_title, 'descripcion': 'Descripción con título largo'}, follow_redirects=True)
+    assert response.status_code == 200
+    assert long_title in response.data.decode('utf-8')
+
+def test_create_duplicate_task_titles(client):
+    title = 'Tarea Duplicada'
+    # Primera creación
+    response1 = client.post('/create', data={'titulo': title, 'descripcion': 'Primera vez'}, follow_redirects=True)
+    # Segunda creación
+    response2 = client.post('/create', data={'titulo': title, 'descripcion': 'Segunda vez'}, follow_redirects=True)
+    assert response1.status_code == 200
+    assert response2.status_code == 200
+    # Verificar que ambas tareas existen
+    conn = get_db_connection()
+    tareas = conn.execute('SELECT * FROM tareas WHERE titulo = ?', (title,)).fetchall()
+    conn.close()
+    assert len(tareas) == 2
+
+def test_edit_nonexistent_task(client):
+    nonexistent_id = 9999
+    response = client.post(f'/{nonexistent_id}/edit', data={'titulo': 'Nuevo título', 'descripcion': 'Nueva descripción'}, follow_redirects=True)
+    assert response.status_code == 404  # Esperamos un error 404
+
+def test_delete_nonexistent_task(client):
+    nonexistent_id = 9999
+    response = client.post(f'/{nonexistent_id}/delete', follow_redirects=True)
+    assert response.status_code == 404  # Esperamos un error 404
+
+def test_access_nonexistent_route(client):
+    response = client.get('/ruta_no_existente')
+    assert response.status_code == 404
+
+def test_massive_task_creation(client):
+    for i in range(1000):
+        response = client.post('/create', data={'titulo': f'Tarea {i}', 'descripcion': f'Descripción {i}'}, follow_redirects=True)
+        assert response.status_code == 200
+    # Verificar que se crearon 1000 tareas
+    conn = get_db_connection()
+    count = conn.execute('SELECT COUNT(*) FROM tareas').fetchone()[0]
+    conn.close()
+    assert count == 1000
